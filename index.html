@@ -132,7 +132,12 @@
             if (!apiLink || !prompt) { alert("Yêu cầu kiểm tra: Thiếu nội dung Prompt hoặc chưa dán link API!"); return; }
             placeholderEl.classList.add('hidden'); imgEl.classList.add('hidden'); loadingEl.classList.remove('hidden');
             try {
-                const response = await fetch(`${apiLink}/generate?prompt=${encodeURIComponent(prompt)}&style=${style}`);
+             
+const response = await fetch(`${apiLink}/generate`, {
+    method: 'POST', // Ép kiểu POST để khớp với Backend
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt, style: style })
+});
                 if (!response.ok) throw new Error();
                 const blob = await response.blob();
                 imgEl.src = URL.createObjectURL(blob); imgEl.classList.remove('hidden');
