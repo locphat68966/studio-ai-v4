@@ -3,92 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STUDIO AI V2 - KENSEI ENGINE</title>
+    <title>KENSEI ENGINE - PLATFORM V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .kensei-panel { background: linear-gradient(145deg, #111827, #1f2937); border: 1px solid #374151; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); }
-        .btn-glow { transition: all 0.3s ease; background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
-        .btn-glow:hover { box-shadow: 0 0 15px #8b5cf6; transform: translateY(-1px); }
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+        .kensei-panel { background: #111827; border: 1px solid #374151; }
+        .btn-glow { background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: 0.3s; }
+        .btn-glow:hover { box-shadow: 0 0 15px #8b5cf6; }
+        .tab-content { display: none; }
+        .tab-active { display: block; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-start min-h-screen p-4 space-y-6 relative">
+<body class="min-h-screen p-4 md:p-8">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-[#0b0f19] flex items-center justify-center p-4">
-        <div class="w-full max-w-md p-8 bg-[#151926] rounded-xl border border-gray-800 shadow-2xl">
+        <div class="w-full max-w-md p-8 bg-[#151926] rounded-xl border border-gray-800">
             <h1 class="text-2xl font-bold text-center mb-8 text-white uppercase tracking-widest">STUDIO AI V2</h1>
             <div class="space-y-3">
-                <button onclick="handleSocialLogin('Google')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Google</button>
-                <button onclick="handleSocialLogin('Apple')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Apple</button>
+                <button onclick="handleSocialLogin('Google')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg">Continue with Google</button>
+                <button onclick="handleSocialLogin('Apple')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg">Continue with Apple</button>
             </div>
-            <div class="my-6 flex items-center text-[#4a5568]">
-                <div class="flex-1 border-t border-[#2d3748]"></div>
-                <span class="px-4 text-sm uppercase">Or</span>
-                <div class="flex-1 border-t border-[#2d3748]"></div>
-            </div>
-            <div class="space-y-4">
-                <input type="email" id="login-email" placeholder="Email" class="w-full p-3 bg-[#0b0f19] border border-[#2d3748] rounded-lg focus:outline-none focus:border-purple-500">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full p-3 bg-[#0b0f19] border border-[#2d3748] rounded-lg focus:outline-none focus:border-purple-500">
-            </div>
-            <button onclick="checkLogin()" class="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold transition uppercase">Continue</button>
         </div>
     </div>
 
-    <div id="main-app" class="hidden w-full max-w-2xl kensei-panel rounded-2xl p-6 space-y-6 mt-12">
-        <div class="absolute top-4 right-4">
-            <button onclick="toggleSettings()" class="bg-gray-800 px-3 py-2 rounded-xl text-sm border border-gray-600">⚙️</button>
-            <div id="settings-menu" class="hidden absolute right-0 mt-2 w-64 bg-gray-900 p-3 rounded-xl border border-gray-700">
-                <p id="user-email" class="text-xs mb-2 truncate">Guest</p>
-                <input type="url" id="api-link" placeholder="API Link (Local Tunnel)" class="w-full bg-gray-950 p-2 text-xs border border-gray-700 rounded">
-                <button onclick="logout()" class="w-full mt-2 text-xs text-red-400">Đăng xuất</button>
+    <div id="main-app" class="hidden max-w-4xl mx-auto space-y-6">
+        <div class="flex gap-6 border-b border-gray-800 pb-4">
+            <button onclick="openTab('generator')" class="text-sm font-bold hover:text-purple-400">TẠO ẢNH</button>
+            <button onclick="openTab('library')" class="text-sm font-bold hover:text-purple-400">THƯ VIỆN (15 SLOTS)</button>
+            <button onclick="openTab('community')" class="text-sm font-bold hover:text-purple-400">CỘNG ĐỒNG</button>
+            <button onclick="logout()" class="ml-auto text-xs text-red-400 hover:text-red-300">ĐĂNG XUẤT</button>
+        </div>
+
+        <div id="generator" class="tab-content tab-active kensei-panel p-6 rounded-2xl space-y-4">
+            <input type="url" id="api-link" placeholder="Nhập API URL (Colab Tunnel)..." class="w-full bg-gray-950 p-3 rounded-xl border border-gray-700 text-sm">
+            <textarea id="prompt" class="w-full bg-gray-900 p-4 rounded-xl border border-gray-700 text-sm" placeholder="Mô tả ý tưởng..."></textarea>
+            <button onclick="generateImage()" class="w-full btn-glow py-3 rounded-xl font-bold text-sm">⚡ KHỞI TẠO</button>
+            <div id="result-container" class="border-2 border-dashed border-gray-700 rounded-2xl min-h-[250px] flex items-center justify-center relative overflow-hidden">
+                <span id="placeholder-text" class="text-gray-500 text-sm">Đang chờ lệnh...</span>
+                <img id="result-image" class="hidden w-full h-auto">
             </div>
         </div>
 
-        <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">KENSEI ENGINE</h1>
-        <select id="image-style" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm">
-            <option value="PHOTOREALISTIC">Photorealistic</option>
-        </select>
-        <textarea id="prompt" rows="3" placeholder="Nhập ý tưởng..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm"></textarea>
-        <button onclick="generateImage()" class="w-full btn-glow text-white font-bold py-3 rounded-xl">⚡ KHỞI TẠO</button>
-        <div id="result-container" class="border-2 border-dashed border-gray-700 rounded-2xl min-h-[250px] flex items-center justify-center">
-            <span id="placeholder-text">Đang chờ lệnh...</span>
-            <div id="loading" class="hidden">Đang tạo...</div>
-            <img id="result-image" class="hidden w-full h-auto">
+        <div id="library" class="tab-content grid grid-cols-3 md:grid-cols-5 gap-4">
+            <script>
+                for(let i=1; i<=15; i++) {
+                    document.write(`
+                        <div class="aspect-square bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 relative group">
+                            <span class="text-xs text-gray-600">Slot ${i}</span>
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                <button onclick="alert('Downloading ${i}')" class="text-lg">📥</button>
+                                <button onclick="alert('Deleting ${i}')" class="text-lg text-red-400">❌</button>
+                            </div>
+                        </div>
+                    `);
+                }
+            </script>
+        </div>
+
+        <div id="community" class="tab-content text-center py-20 text-gray-500">
+            Cộng đồng đang tiến hóa...
         </div>
     </div>
 
     <script>
-        // INIT
-        window.onload = () => { if(localStorage.getItem('isLoggedIn')) showApp(localStorage.getItem('userEmail')); };
-        
-        function showApp(email) {
+        // CORE LOGIC
+        window.onload = () => { if(localStorage.getItem('isLoggedIn')) showApp(); };
+        function showApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-email').innerText = email;
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userEmail', email);
         }
-
-        function checkLogin() {
-            if(document.getElementById('login-email').value === "admin@kensei.com" && document.getElementById('login-pass').value === "123456") 
-                showApp("admin@kensei.com");
-            else alert("Sai pass!");
+        function openTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('tab-active'));
+            document.getElementById(id).classList.add('tab-active');
         }
-
         async function handleSocialLogin(provider) {
-            alert("Chuyển hướng xác thực " + provider + "...");
-            showApp(provider + "_User");
+            localStorage.setItem('isLoggedIn', 'true');
+            showApp();
         }
-
         function logout() { localStorage.clear(); location.reload(); }
-        function toggleSettings() { document.getElementById('settings-menu').classList.toggle('hidden'); }
 
+        // API LOGIC (Kết nối Backend)
         async function generateImage() {
             const apiLink = document.getElementById('api-link').value;
             const prompt = document.getElementById('prompt').value;
-            if(!apiLink || !prompt) return alert("Thiếu thông tin!");
+            if(!apiLink || !prompt) return alert("Thiếu API hoặc Prompt!");
             
-            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('placeholder-text').innerText = "Đang tạo ảnh...";
             try {
                 const response = await fetch(`${apiLink}/generate`, {
                     method: 'POST',
@@ -96,11 +96,10 @@
                     body: JSON.stringify({prompt: prompt})
                 });
                 const blob = await response.blob();
-                const img = document.getElementById('result-image');
-                img.src = URL.createObjectURL(blob);
-                img.classList.remove('hidden');
-            } catch(e) { alert("Kết nối lỗi!"); }
-            document.getElementById('loading').classList.add('hidden');
+                document.getElementById('result-image').src = URL.createObjectURL(blob);
+                document.getElementById('result-image').classList.remove('hidden');
+                document.getElementById('placeholder-text').classList.add('hidden');
+            } catch(e) { alert("Kết nối lỗi! Kiểm tra API Link."); }
         }
     </script>
 </body>
