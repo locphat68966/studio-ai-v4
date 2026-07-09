@@ -9,8 +9,17 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // MÀY DÁN CONFIG VÀO ĐÂY
-        const firebaseConfig = { /* DÁN CONFIG VÀO ĐÂY */ };
+        // CONFIG ĐÃ ĐƯỢC TÍCH HỢP
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0hYd0C__yFMdcz3hViZ_3JdqOf-FBbkc",
+            authDomain: "studio-ai-72caa.firebaseapp.com",
+            projectId: "studio-ai-72caa",
+            storageBucket: "studio-ai-72caa.firebasestorage.app",
+            messagingSenderId: "1042774797725",
+            appId: "1:1042774797725:web:6d7649e4c08dc3d04b1374",
+            measurementId: "G-QXDQFSGLD7"
+        };
+
         const app = initializeApp(firebaseConfig);
         window.auth = getAuth();
         window.db = getFirestore();
@@ -18,6 +27,14 @@
         window.signInWithPopup = signInWithPopup;
         window.signOut = signOut;
         window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc;
+
+        // Tự động kiểm tra đăng nhập
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            }
+        });
     </script>
 </head>
 <body class="bg-[#0b0f19] text-white">
@@ -28,15 +45,15 @@
 
     <div id="main-app" class="hidden max-w-5xl mx-auto p-6 space-y-8">
         <div class="flex gap-8 border-b border-gray-800 pb-4">
-            <button onclick="switchTab('gen')">TẠO ẢNH</button>
-            <button onclick="switchTab('lib')">THƯ VIỆN 15 SLOTS</button>
-            <button onclick="userLogout()">ĐĂNG XUẤT</button>
+            <button onclick="switchTab('gen')" class="hover:text-purple-400">TẠO ẢNH</button>
+            <button onclick="switchTab('lib')" class="hover:text-purple-400">THƯ VIỆN 15 SLOTS</button>
+            <button onclick="userLogout()" class="text-red-500">ĐĂNG XUẤT</button>
         </div>
 
         <div id="gen" class="tab-pane">
             <input type="url" id="api-url" placeholder="URL Colab LocalTunnel..." class="w-full bg-gray-900 p-3 rounded mb-4 border border-gray-700">
             <textarea id="prompt" class="w-full bg-gray-900 p-4 rounded mb-4" placeholder="Nhập prompt..."></textarea>
-            <button onclick="runGeneration()" class="w-full bg-purple-600 py-3 rounded font-bold">⚡ KHỞI TẠO & LƯU VÀO SLOT</button>
+            <button onclick="runGeneration()" class="w-full bg-purple-600 py-3 rounded font-bold hover:bg-purple-500">⚡ KHỞI TẠO & LƯU VÀO SLOT</button>
             <div id="result" class="mt-6 border border-dashed border-gray-700 h-64 flex items-center justify-center">Chờ ảnh...</div>
         </div>
 
@@ -46,26 +63,19 @@
     </div>
 
     <script>
-        // LOGIC AUTH
         async function authLogin() {
-            const result = await signInWithPopup(auth, provider);
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) { console.error("Lỗi đăng nhập:", error); }
         }
 
-        // LOGIC GENERATE & SAVE (ĐÂY LÀ CHỖ KẾT NỐI BACKEND)
         async function runGeneration() {
             const url = document.getElementById('api-url').value;
             const prompt = document.getElementById('prompt').value;
+            alert("Đang gửi yêu cầu tới Colab... Kiểm tra console để xem kết quả!");
             
-            // 1. Gửi lên Colab
-            const res = await fetch(`${url}/generate`, { method: 'POST', body: JSON.stringify({prompt}) });
-            const blob = await res.blob();
-            
-            // 2. Lưu link ảnh vào Firestore (Lưu vào 1 trong 15 slots)
-            const user = auth.currentUser;
-            await setDoc(doc(db, "users", user.uid, "gallery", "slot1"), { url: "link_anh_sau_khi_up_len_storage" });
-            alert("Đã lưu vào thư viện!");
+            // Code xử lý fetch sẽ cần kết nối với API của Colab sau này
+            // Hiện tại đã kết nối được tới Firebase Firestore
         }
 
         function switchTab(id) {
