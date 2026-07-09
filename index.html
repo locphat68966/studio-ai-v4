@@ -2,105 +2,77 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KENSEI ENGINE - PLATFORM V2</title>
+    <title>KENSEI ENGINE - FULL PLATFORM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
-        .kensei-panel { background: #111827; border: 1px solid #374151; }
-        .btn-glow { background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: 0.3s; }
-        .btn-glow:hover { box-shadow: 0 0 15px #8b5cf6; }
-        .tab-content { display: none; }
-        .tab-active { display: block; }
-    </style>
-</head>
-<body class="min-h-screen p-4 md:p-8">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-[#0b0f19] flex items-center justify-center p-4">
-        <div class="w-full max-w-md p-8 bg-[#151926] rounded-xl border border-gray-800">
-            <h1 class="text-2xl font-bold text-center mb-8 text-white uppercase tracking-widest">STUDIO AI V2</h1>
-            <div class="space-y-3">
-                <button onclick="handleSocialLogin('Google')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg">Continue with Google</button>
-                <button onclick="handleSocialLogin('Apple')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg">Continue with Apple</button>
-            </div>
-        </div>
+        // MÀY DÁN CONFIG VÀO ĐÂY
+        const firebaseConfig = { /* DÁN CONFIG VÀO ĐÂY */ };
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth();
+        window.db = getFirestore();
+        window.provider = new GoogleAuthProvider();
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc;
+    </script>
+</head>
+<body class="bg-[#0b0f19] text-white">
+
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-[#0b0f19] flex items-center justify-center">
+        <button onclick="authLogin()" class="bg-blue-600 px-10 py-4 rounded-xl font-bold hover:scale-105 transition">LOGIN VỚI GOOGLE</button>
     </div>
 
-    <div id="main-app" class="hidden max-w-4xl mx-auto space-y-6">
-        <div class="flex gap-6 border-b border-gray-800 pb-4">
-            <button onclick="openTab('generator')" class="text-sm font-bold hover:text-purple-400">TẠO ẢNH</button>
-            <button onclick="openTab('library')" class="text-sm font-bold hover:text-purple-400">THƯ VIỆN (15 SLOTS)</button>
-            <button onclick="openTab('community')" class="text-sm font-bold hover:text-purple-400">CỘNG ĐỒNG</button>
-            <button onclick="logout()" class="ml-auto text-xs text-red-400 hover:text-red-300">ĐĂNG XUẤT</button>
+    <div id="main-app" class="hidden max-w-5xl mx-auto p-6 space-y-8">
+        <div class="flex gap-8 border-b border-gray-800 pb-4">
+            <button onclick="switchTab('gen')">TẠO ẢNH</button>
+            <button onclick="switchTab('lib')">THƯ VIỆN 15 SLOTS</button>
+            <button onclick="userLogout()">ĐĂNG XUẤT</button>
         </div>
 
-        <div id="generator" class="tab-content tab-active kensei-panel p-6 rounded-2xl space-y-4">
-            <input type="url" id="api-link" placeholder="Nhập API URL (Colab Tunnel)..." class="w-full bg-gray-950 p-3 rounded-xl border border-gray-700 text-sm">
-            <textarea id="prompt" class="w-full bg-gray-900 p-4 rounded-xl border border-gray-700 text-sm" placeholder="Mô tả ý tưởng..."></textarea>
-            <button onclick="generateImage()" class="w-full btn-glow py-3 rounded-xl font-bold text-sm">⚡ KHỞI TẠO</button>
-            <div id="result-container" class="border-2 border-dashed border-gray-700 rounded-2xl min-h-[250px] flex items-center justify-center relative overflow-hidden">
-                <span id="placeholder-text" class="text-gray-500 text-sm">Đang chờ lệnh...</span>
-                <img id="result-image" class="hidden w-full h-auto">
-            </div>
+        <div id="gen" class="tab-pane">
+            <input type="url" id="api-url" placeholder="URL Colab LocalTunnel..." class="w-full bg-gray-900 p-3 rounded mb-4 border border-gray-700">
+            <textarea id="prompt" class="w-full bg-gray-900 p-4 rounded mb-4" placeholder="Nhập prompt..."></textarea>
+            <button onclick="runGeneration()" class="w-full bg-purple-600 py-3 rounded font-bold">⚡ KHỞI TẠO & LƯU VÀO SLOT</button>
+            <div id="result" class="mt-6 border border-dashed border-gray-700 h-64 flex items-center justify-center">Chờ ảnh...</div>
         </div>
 
-        <div id="library" class="tab-content grid grid-cols-3 md:grid-cols-5 gap-4">
-            <script>
-                for(let i=1; i<=15; i++) {
-                    document.write(`
-                        <div class="aspect-square bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 relative group">
-                            <span class="text-xs text-gray-600">Slot ${i}</span>
-                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                                <button onclick="alert('Downloading ${i}')" class="text-lg">📥</button>
-                                <button onclick="alert('Deleting ${i}')" class="text-lg text-red-400">❌</button>
-                            </div>
-                        </div>
-                    `);
-                }
-            </script>
-        </div>
-
-        <div id="community" class="tab-content text-center py-20 text-gray-500">
-            Cộng đồng đang tiến hóa...
+        <div id="lib" class="tab-pane hidden grid grid-cols-5 gap-4">
+            <script>for(let i=1; i<=15; i++) document.write(`<div class="aspect-square bg-gray-800 border border-gray-700 flex items-center justify-center text-xs">Slot ${i}</div>`);</script>
         </div>
     </div>
 
     <script>
-        // CORE LOGIC
-        window.onload = () => { if(localStorage.getItem('isLoggedIn')) showApp(); };
-        function showApp() {
+        // LOGIC AUTH
+        async function authLogin() {
+            const result = await signInWithPopup(auth, provider);
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
         }
-        function openTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('tab-active'));
-            document.getElementById(id).classList.add('tab-active');
-        }
-        async function handleSocialLogin(provider) {
-            localStorage.setItem('isLoggedIn', 'true');
-            showApp();
-        }
-        function logout() { localStorage.clear(); location.reload(); }
 
-        // API LOGIC (Kết nối Backend)
-        async function generateImage() {
-            const apiLink = document.getElementById('api-link').value;
+        // LOGIC GENERATE & SAVE (ĐÂY LÀ CHỖ KẾT NỐI BACKEND)
+        async function runGeneration() {
+            const url = document.getElementById('api-url').value;
             const prompt = document.getElementById('prompt').value;
-            if(!apiLink || !prompt) return alert("Thiếu API hoặc Prompt!");
             
-            document.getElementById('placeholder-text').innerText = "Đang tạo ảnh...";
-            try {
-                const response = await fetch(`${apiLink}/generate`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({prompt: prompt})
-                });
-                const blob = await response.blob();
-                document.getElementById('result-image').src = URL.createObjectURL(blob);
-                document.getElementById('result-image').classList.remove('hidden');
-                document.getElementById('placeholder-text').classList.add('hidden');
-            } catch(e) { alert("Kết nối lỗi! Kiểm tra API Link."); }
+            // 1. Gửi lên Colab
+            const res = await fetch(`${url}/generate`, { method: 'POST', body: JSON.stringify({prompt}) });
+            const blob = await res.blob();
+            
+            // 2. Lưu link ảnh vào Firestore (Lưu vào 1 trong 15 slots)
+            const user = auth.currentUser;
+            await setDoc(doc(db, "users", user.uid, "gallery", "slot1"), { url: "link_anh_sau_khi_up_len_storage" });
+            alert("Đã lưu vào thư viện!");
         }
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function userLogout() { signOut(auth).then(() => location.reload()); }
     </script>
 </body>
 </html>
