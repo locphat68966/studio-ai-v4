@@ -14,13 +14,12 @@
 </head>
 <body>
 
-    <!-- MÀN HÌNH LOGIN -->
     <div id="login-screen" class="fixed inset-0 z-[100] bg-[#0b0f19] flex items-center justify-center p-4">
         <div class="w-full max-w-md p-8 bg-[#151926] rounded-xl border border-gray-800 shadow-2xl">
             <h1 class="text-2xl font-bold text-center mb-8 text-white uppercase tracking-widest">STUDIO AI V2</h1>
             <div class="space-y-3">
-                <button class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Google</button>
-                <button class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Apple</button>
+                <button onclick="mockAuth('Google')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Google</button>
+                <button onclick="mockAuth('Apple')" class="w-full py-3 bg-[#1e2536] hover:bg-[#2a3447] rounded-lg font-medium transition">Continue with Apple</button>
             </div>
             <div class="my-6 flex items-center text-[#4a5568]">
                 <div class="flex-1 border-t border-[#2d3748]"></div>
@@ -36,25 +35,25 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div id="main-app" class="hidden flex flex-col items-center justify-start min-h-screen p-4 space-y-6 relative">
         <div class="absolute top-4 right-4 z-50">
             <button onclick="toggleSettings()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-2 rounded-xl border border-gray-600 text-sm font-medium transition shadow-lg">⚙️ Cài đặt</button>
             <div id="settings-menu" class="hidden absolute right-0 mt-2 w-72 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-2xl">
                 <div class="flex items-center gap-3 p-2 border-b border-gray-800 mb-2">
                     <div class="relative w-12 h-12">
-                        <img id="user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=random" class="w-full h-full rounded-full border-2 border-gray-700">
+                        <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" class="w-full h-full rounded-full border-2 border-gray-700">
                         <button class="absolute -bottom-1 -right-1 bg-gray-800 p-1 rounded-full border border-gray-600 text-[10px]">📸</button>
                     </div>
                     <div class="text-xs">
-                        <p id="user-email" class="text-gray-200">Guest User</p>
+                        <p id="user-email" class="text-gray-200 truncate max-w-[150px]">User</p>
                         <p class="text-red-500 italic font-bold">Đã xác thực</p>
                     </div>
                 </div>
-                <div class="p-2">
+                <div class="p-2 border-b border-gray-800 pb-2">
                     <label class="text-[10px] font-semibold text-gray-400">API LINK:</label>
                     <input type="url" id="api-link" placeholder="https://xxxx.loca.lt" class="w-full bg-gray-950 border border-gray-800 rounded px-2 py-1 text-xs text-gray-300">
                 </div>
+                <button onclick="logout()" class="w-full text-[11px] text-gray-500 hover:text-red-400 mt-2 pt-1">Đăng xuất</button>
             </div>
         </div>
 
@@ -65,25 +64,68 @@
             </select>
             <textarea id="prompt" rows="3" placeholder="Nhập ý tưởng tại đây..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-100"></textarea>
             <button onclick="generateImage()" class="w-full btn-glow text-white font-bold py-3 rounded-xl uppercase text-sm">⚡ Khởi tạo hình ảnh</button>
-            <div id="result-container" class="border-2 border-dashed border-gray-700 rounded-2xl min-h-[250px] flex items-center justify-center bg-gray-950">
+            <div id="result-container" class="border-2 border-dashed border-gray-700 rounded-2xl min-h-[250px] flex items-center justify-center bg-gray-950 relative overflow-hidden">
+                 <img id="result-image" class="hidden w-full h-auto" src="" alt="Result">
                  <span id="placeholder-text" class="text-sm text-gray-500">Đang chờ lệnh...</span>
+                 <div id="loading" class="hidden text-sm text-blue-400">Đang tạo ảnh...</div>
             </div>
         </div>
     </div>
 
     <script>
-        function checkLogin() {
-            if (document.getElementById('login-email').value === "admin@kensei.com" && document.getElementById('login-pass').value === "123456") {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('user-email').innerText = document.getElementById('login-email').value;
-            } else { alert("Thông tin sai!"); }
+        // Logic xác thực thật bằng LocalStorage
+        window.onload = () => {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                showApp(localStorage.getItem('userEmail'));
+            }
+        };
+
+        function showApp(email) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-email').innerText = email;
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userEmail', email);
         }
+
+        function checkLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            if (email === "admin@kensei.com" && pass === "123456") {
+                showApp(email);
+            } else { document.getElementById('login-error').classList.remove('hidden'); }
+        }
+
+        function mockAuth(provider) {
+            showApp(provider + "_User");
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
         function toggleSettings() { document.getElementById('settings-menu').classList.toggle('hidden'); }
+        
         async function generateImage() {
-            const apiLink = document.getElementById('api-link').value;
-            if (!apiLink) { alert("Thiếu link API!"); return; }
-            alert("Đang gửi lệnh tới: " + apiLink);
+            const apiLink = document.getElementById('api-link').value.trim();
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!apiLink || !prompt) { alert("Thiếu Prompt hoặc Link API!"); return; }
+            
+            document.getElementById('placeholder-text').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${apiLink}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, style: document.getElementById('image-style').value })
+                });
+                const blob = await response.blob();
+                const imgEl = document.getElementById('result-image');
+                imgEl.src = URL.createObjectURL(blob);
+                imgEl.classList.remove('hidden');
+            } catch (e) { alert("Kết nối thất bại!"); } finally { document.getElementById('loading').classList.add('hidden'); }
         }
     </script>
 </body>
